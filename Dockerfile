@@ -5,6 +5,7 @@ ARG GRB_VERSION=9.5.0
 ARG PYTHON_VERSION=3.10.4
 
 ENV HOME /home/jovyan
+ENV USER jovyan
 
 COPY build_scripts/mamba_install.txt "${HOME}"/mamba_install.txt
 COPY build_scripts/pip_install.txt "${HOME}"/pip_install.txt
