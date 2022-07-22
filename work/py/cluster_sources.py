@@ -14,7 +14,7 @@ use_trna = True
 use_mrna = True
 binarize_data = True
 
-cluster_sources.cluster_sources_main(
+cluster_sources.main(
     results_dir=results_dir,
     context_names=context_names,
     source_type=source_type,

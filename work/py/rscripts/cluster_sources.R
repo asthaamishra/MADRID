@@ -94,8 +94,15 @@ read_matrix_values <- function(study_files) {
     }
 }
 
+cluster_matrix_values <- function(study_dataframes) {
+    # This function is responsible for clustering the dataframe matrices returned from read_matrix_values
+    for (i in study_dataframes) {
+        print(i)
+    }
+}
 
-cluster_sources_main <- function(
+
+main <- function(
   results_directory,
   context_names,
   source_type,
@@ -106,6 +113,7 @@ cluster_sources_main <- function(
     
     study_files <- get_replicate_files(results_directory = results_directory, context_names = context_names,  source_type = source_type, use_trna = use_trna, use_mrna = use_mrna)
     study_dataframes <- read_matrix_values(study_files = study_files)
+    cluster_matrix_values(study_dataframes = study_dataframes)
     print("DONE")
 }
 
@@ -116,4 +124,4 @@ source_type <- "zFPKM"
 use_trna <- TRUE
 use_mrna <- TRUE
 binarize_data <- FALSE
-cluster_sources_main(results_directory = results_directory, context_names = context_names, source_type = source_type, use_trna = use_trna, use_mrna = use_mrna, binarize_data = binarize_data)
+main(results_directory = results_directory, context_names = context_names, source_type = source_type, use_trna = use_trna, use_mrna = use_mrna, binarize_data = binarize_data)
