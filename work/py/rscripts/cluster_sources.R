@@ -16,6 +16,7 @@ get_study_value <- function(file_path) {
     # Find "S##.csv", but use a lookahead to avoid "taking" the ".csv" portion
     match <- stringr::str_extract(string = toupper(file_path), pattern = "S\\d{1,2}(?=\\.CSV)")
 
+    # If match is not NA, uppercase the value
     if (!is.na(match))
         match <- toupper(match)
 
@@ -23,9 +24,12 @@ get_study_value <- function(file_path) {
 }
 
 get_replicate_files <- function(results_directory, context_names, source_type, use_trna, use_mrna) {
-
     # This function will get the file paths of zFPKMs for each replicate
+
+    # Create a list to hold all cell types
     all_context_files <- list()
+
+    # Iterate through each context/cell type given
      for (context_name in context_names) {
         lower_context_name <- tolower(context_name)
         source_type <- tolower(source_type)
@@ -96,8 +100,11 @@ read_matrix_values <- function(study_files) {
 
 cluster_matrix_values <- function(study_dataframes) {
     # This function is responsible for clustering the dataframe matrices returned from read_matrix_values
-    for (i in study_dataframes) {
-        print(i)
+    for (context in study_dataframes) {
+        for (study in context) {
+            print(colnames(study))
+            print("")
+        }
     }
 }
 

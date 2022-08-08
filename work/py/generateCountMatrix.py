@@ -11,7 +11,7 @@ from rpy2.robjects.packages import importr, SignatureTranslatedAnonymousPackage
 # pandas2ri.activate()
 
 # limma = importr("limma")
-tidyverse = importr("tidyverse", lib_loc="/home/jupyteruser/rlibs")
+tidyverse = importr("tidyverse", lib_loc="/home/jovyan/rlibs")
 # edgeR = importr("edgeR")
 # genefilter = importr("genefilter")
 # biomaRt = importr("biomaRt")
@@ -19,7 +19,7 @@ tidyverse = importr("tidyverse", lib_loc="/home/jupyteruser/rlibs")
 
 # automatically convert ryp2 dataframe to Pandas dataframe
 string = """
-library(tidyverse, lib.loc="/home/jupyteruser/rlibs")
+library(tidyverse, lib.loc="/home/jovyan/rlibs")
 
 organizeFiles <- function(data_dir, technique) {
   SampMetrics <- list()

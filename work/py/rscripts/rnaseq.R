@@ -212,7 +212,7 @@ cpm_filter <- function(SampMetrics, filt_options, context_name, prep) {
         size <- SampMetrics[[i]][["GeneSizes"]]
         lib.size <- colSums(counts)
         CPM <- cpm(counts,lib.size=lib.size)
-        cpm_fname <- file.path("home", "jupyteruser", "work", "data", "results",
+        cpm_fname <- file.path("home", "jovyan", "work", "data", "results",
                                 context_name, prep, paste0("CPM_Matrix_", prep, "_", study_number, ".csv"))
         write_cpm <- cbind(ent, CPM)
         write.csv(write_cpm, cpm_fname, row.names=FALSE)
@@ -264,7 +264,7 @@ TPM_quant_filter <- function(SampMetrics, filt_options, context_name, prep) {
         ent <- SampMetrics[[i]][["Entrez"]]
         size <- SampMetrics[[i]][["GeneSizes"]]
         tpm <- SampMetrics[[i]][["TPM_Matrix"]]
-        tpm_fname <- file.path("home", "jupyteruser", "work", "data", "results",
+        tpm_fname <- file.path("home", "jovyan", "work", "data", "results",
                         context_name, prep, paste0("TPM_Matrix_", prep, "_", study_number, ".csv"))
         write_tpm <- cbind(ent, tpm)
         write.csv(write_tpm, tpm_fname, row.names=FALSE)
