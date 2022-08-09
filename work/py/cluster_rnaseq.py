@@ -1,13 +1,17 @@
 # !/usr/bin/python3
 
+import argparse
 import os
 import sys
 from rpy2.robjects.packages import importr
 from rpy2.robjects import r
 from rpy2.robjects import pandas2ri
+
+from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+from rpy2.robjects.packages import importr
+
 from project import configs
-import argparse
 
 # enable r to py conversion
 pandas2ri.activate()
@@ -25,20 +29,13 @@ string = f.read()
 f.close()
 cluster_io = SignatureTranslatedAnonymousPackage(string, "cluster_io")
 
-
-def parse_args(argv) -> argparse.Namespace:
-    """
-    This function is responsible for parsing arguments as they are received from the command line
-    
-    :param argv: The list of arguments directly from the command line
-    :return: The parsed arguments in the form of an argparse.Namespace object
-    """
+def parse_arguments(argv) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="cluster_rnaseq.py",
         description="Cluster RNA-seq Data using Multiple Correspondence Analysis or UMAP. Clusters at the replicate, "
-        "batch/study, and context levels.",
+                    "batch/study, and context levels.",
         epilog="For additional help, please post questions/issues in the MADRID GitHub repo at "
-        "https://github.com/HelikarLab/MADRID or email babessell@gmail.com",
+               "https://github.com/HelikarLab/MADRID or email babessell@gmail.com",
     )
     parser.add_argument(
         "-n",
@@ -47,8 +44,8 @@ def parse_args(argv) -> argparse.Namespace:
         required=True,
         dest="context_names",
         help="""Tissue/cell name of models to generate. If making multiple models in a batch, then
-                             use the format: \"['context1', 'context2', ... etc]\". Note the outer double-quotes and the
-                             inner single-quotes are required to be interpreted. This a string, not a python list""",
+                                 use the format: \"['context1', 'context2', ... etc]\". Note the outer double-quotes and the
+                                 inner single-quotes are required to be interpreted. This a string, not a python list""",
     )
     parser.add_argument(
         "-t",
@@ -164,13 +161,13 @@ def parse_args(argv) -> argparse.Namespace:
 def validate_args(args: argparse.Namespace) -> argparse.Namespace:
     """
     This function is responsible for ensuring the parsed arguments are valid.
-    
+
     :param args: The arguments parsed from the parse_args() function
     :return: The validated arguments in the form of an argparse.Namespace object
     """
-    
+
     args.valid_arguments = True
-    
+
     if type(args.min_count) == str and str(args.min_count).lower() != "default":
         try:
             args.min_count = int(args.min_count)
@@ -254,12 +251,12 @@ def validate_args(args: argparse.Namespace) -> argparse.Namespace:
             print(f"--n_neigh_batch must be either 'default' or an integer greater than 1 and less than or equal to "
                   f"the total number of batches being clustered across all contexts.")
             args.valid_arguments = False
-            
+
     if type(args.n_neigh_batch) != str and args.n_neigh_cont < 2:
         print(f"--n_neigh_context must be either 'default' or an integer greater than 1 and less than or equal to "
               f"the total number of contexts being clustered.")
         args.valid_arguments = False
-        
+
     return args
 
 
@@ -269,7 +266,7 @@ def main(argv):
     """
     args = parse_args(argv)
     args = validate_args(args)
-    
+
     if not args.valid_arguments:
         sys.exit(1)
 
@@ -298,7 +295,6 @@ def main(argv):
         min_count=args.min_count,
         seed=args.seed,
     )
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])
