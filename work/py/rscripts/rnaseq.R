@@ -18,7 +18,6 @@ library(genefilter)
 library(biomaRt)
 library(sjmisc)
 library(zFPKM)
-library(zFPKM)
 library(stringr)
 library(readxl)
 
@@ -332,7 +331,7 @@ zfpkm_filter <- function(SampMetrics, filt_options, context_name, prep) {
         nas <- is.na(fdf)==1
         #fdf[nas] <- 0
         #fdf[missing_vals] <- 0 # set NA values to zero to prevent error in zfpkm calculation
-        zmat <- zFPKM(fdf, min_thresh=0, assayName="FPKM") # calculate zFPKM
+        zmat <- zFPKM::zFPKM(fdf, min_thresh=0, assayName="FPKM") # calculate zFPKM
         zmat[minimums] <- -4 # instead of -inf set to lower limit
         #zmat[nas] <- -4
         #SampMetrics[[i]][["zFPKM_Matrix"]] <- zmat

@@ -68,29 +68,38 @@ get_replicate_files <- function(results_directory, context_names, source_type, u
     }
 }
 
-read_matrix_values <- function(study_files) {
+read_matrix_values <- function(context_files) {
     # This function is responsible for reading in the matrix values found within the replicate files
     # It takes the list of replicate files and returns a list of lists of matrix values
     replicate_dataframes <- list()
-    context_names <- names(study_files)
+    context_names <- names(context_files)
 
+    # Iterate through each context/cell type
     for (context in context_names) {
+
+        # Define the index of replicate_dataframes we will be appending to
         index <- 1
-        context_files <- study_files[[context]]
+
+        # Collect our current context data
+        current_context_files <- context_files[[context]]
         context_dataframe <- c()
-        for (file in context_files) {
+        for (file in current_context_files) {
             dataframe <- read.csv(file, header = TRUE)
 
+            # Get the S## value from the file path
             study <- get_study_value(file)
             context_dataframe[[study]] <- dataframe
 
             index <- index + 1
         }
 
+        # Only append new list if context_dataframe has at least one item
         if (length(context_dataframe) > 0) {
             replicate_dataframes[[context]] <- context_dataframe
         }
     }
+
+    # Return list if it has at least one item, otherwise return "NA"
     if (length(replicate_dataframes) > 0) {
         return(replicate_dataframes)
     } else {
@@ -98,16 +107,74 @@ read_matrix_values <- function(study_files) {
     }
 }
 
-cluster_matrix_values <- function(study_dataframes) {
-    # This function is responsible for clustering the dataframe matrices returned from read_matrix_values
-    for (context in study_dataframes) {
+
+binarize_matrix_values <- function(context_dataframes, default_bin) {
+    # study_dataframes: a list of lists of dataframes
+    # study_dataframes[[1]]: naiveB
+    # study_dataframes[[1]][["S1"]]: S1 dataframe
+    # study_dataframes[[1]][["S2"]]: S2 dataframe
+    # default_bin: The value at which 0-bin ("off") items turn to 1-bin items ("on")
+
+
+    binarized_context_dataframes <- list()
+    for (context in context_dataframes) {
+
+        # Set the index to append to binarized_dataframes
+        index <- 1
+
+        # Get the "naiveB" portion from "naiveB_S1R1"
+        # Split the string at the underscore and get the first element
+        # Access the first item from the list, and take the first table in the list
+        # This will give us the column names of the data frame (ENTRZ_GENE_ID, immNK_S1R1, immNKS1R2, etc.)
+        col_names <- colnames(context[1][[1]])
+        context_name <- stringr::str_split(col_names[[2]], "_", simplify = TRUE)[[1]]
+        context_dataframe <- c()
         for (study in context) {
-            print(colnames(study))
-            print("")
+            # Get the S## from the study name
+            # Split the column name at "_", and take the "S##R##" portion
+            # From here, use regex to get the S## value
+            study_name <- stringr::str_split(colnames(study)[2], "_", simplify = TRUE)[[2]]
+            study_name <- stringr::str_extract(string = study_name, pattern = "S\\d{1,2}")
+
+            # Get the number of columns in the dataframe
+            n_cols <- ncol(study)
+
+            # This will test values in the study. If the value is less than or equal to-3, it will place it in the "0" bin
+            # If it is greater than -3, it will execute the nested if-else statement
+            # In this statement, if the value is greater than -3 and less than or equal to 0, it will place the value in the "1" bin
+            # If the value is greater than 0, it will place the value in the "2" bin
+
+            binarized_study <- ifelse(study[,2:n_cols] <= -3, 0, 1)
+            context_dataframe[[study_name]] <- binarized_study
         }
+
+        binarized_context_dataframes[[context_name]] <- context_dataframe
+
     }
+    return(binarized_context_dataframes)
 }
 
+cluster_all_replicates_all_studies_all_context_one_source <- function() {
+    # This function is responsible for clustering all replicates across all studies within a single data source for all contexts
+    # For example, clustering all naiveB and immNK studies within RNA-seq data
+
+
+}
+
+cluster_all_replicates_all_studies_single_context_all_source <- function() {
+    # This function will cluster all replicates across all studies within a single context
+    # For example, clustering all immNK studies within all data sources provided
+}
+
+cluster_all_studies_all_contexts_single_source <- function() {
+    # This function will cluster all studies across all contexts within a single data source
+    # For example, cluster all immNK and naiveB within all RNAseq data
+}
+
+cluster_all_studies_one_context_all_source <- function () {
+    # This function will cluster all studies within a single context for all given data sources
+    # For example, clustering all immNK studies across all data sources given
+}
 
 main <- function(
   results_directory,
@@ -115,12 +182,20 @@ main <- function(
   source_type,
   use_trna,
   use_mrna,
-  binarize_data
+  binarize_data,
+  default_bin
 ) {
     
-    study_files <- get_replicate_files(results_directory = results_directory, context_names = context_names,  source_type = source_type, use_trna = use_trna, use_mrna = use_mrna)
-    study_dataframes <- read_matrix_values(study_files = study_files)
-    cluster_matrix_values(study_dataframes = study_dataframes)
+    context_files <- get_replicate_files(results_directory = results_directory, context_names = context_names,  source_type = source_type, use_trna = use_trna, use_mrna = use_mrna)
+    context_dataframes <- read_matrix_values(context_files = context_files)
+
+    if (binarize_data == TRUE)
+      context_dataframes <- binarize_matrix_values(context_dataframes = context_dataframes, default_bin = default_bin)
+
+    cluster_all_replicates_all_studies_all_context_one_source()
+
+    cluster_matrix_values(context_dataframes = context_dataframes)
+
     print("DONE")
 }
 
@@ -131,4 +206,5 @@ source_type <- "zFPKM"
 use_trna <- TRUE
 use_mrna <- TRUE
 binarize_data <- FALSE
-main(results_directory = results_directory, context_names = context_names, source_type = source_type, use_trna = use_trna, use_mrna = use_mrna, binarize_data = binarize_data)
+default_bin <- -3
+main(results_directory = results_directory, context_names = context_names, source_type = source_type, use_trna = use_trna, use_mrna = use_mrna, binarize_data = binarize_data, default_bin = default_bin)
