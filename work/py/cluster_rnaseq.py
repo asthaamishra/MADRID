@@ -29,6 +29,7 @@ string = f.read()
 f.close()
 cluster_io = SignatureTranslatedAnonymousPackage(string, "cluster_io")
 
+
 def parse_arguments(argv) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="cluster_rnaseq.py",
@@ -264,7 +265,7 @@ def main(argv):
     """
     Cluster RNA-seq Data
     """
-    args = parse_args(argv)
+    args = parse_arguments(argv)
     args = validate_args(args)
 
     if not args.valid_arguments:
@@ -295,6 +296,7 @@ def main(argv):
         min_count=args.min_count,
         seed=args.seed,
     )
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

@@ -177,6 +177,7 @@ plot_MCA_replicates <- function(logical_matrix, contexts, wd, label) {
 
 plot_UMAP_replicates <- function(logical_matrix, contexts, wd, label, n_neigh, min_dist) {
     n_neigh <- ifelse(n_neigh=="default", as.integer(length(contexts)), n_neigh)
+
     if ( n_neigh < 2 ) {
         print("Cannot cluster replicates if n nearest neighbors is < 1!")
         stop()
@@ -191,6 +192,7 @@ plot_UMAP_replicates <- function(logical_matrix, contexts, wd, label, n_neigh, m
         }
       )
     )
+
     coords <- data.frame(uwot::umap(fac_matrix, n_neighbors=n_neigh, metric="euclidean", min_dist=min_dist)) %>% cbind(., contexts)
     row.names(coords) <- row.names(logical_matrix)
     colnames(coords) <- c("x", "y", "contexts")
@@ -403,7 +405,7 @@ plot_UMAP_contexts <- function(log_mat_context, contexts, wd, label, n_neigh, mi
         }
       )
     )
-    
+
     coords <- data.frame(uwot::umap(fac_matrix, n_neighbors=n_neigh, metric="euclidean", min_dist=min_dist))
     row.names(coords) <- row.names(log_mat_context)
     colnames(coords) <- c("x", "y")
