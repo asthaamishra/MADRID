@@ -1,25 +1,25 @@
-# prevent messy messages from repeatedly writing to juypter
-
-username <- Sys.info()["user"]
-work_dir <- str_interp("/home/${username}/work")
-if (!dir.exists(str_interp("${work_dir}/py/rlogs"))) {
-    dir.create(str_interp("${work_dir}/py/rlogs"))
-}
-
-zz <- file(file.path(work_dir, "py", "rlogs", "rnaseq.Rout"), open="wt")
-sink(zz, type="message")
-
-
 library(ggplot2)
 library(ggrepel)
 library(tidyverse)
 #library(FactoMineR)
 library(uwot)
 library(dplyr)
+library(stringr)
+
+# prevent messy messages from repeatedly writing to juypter
+
+username <- Sys.info()["user"]
+work_dir <- stringr::str_interp("/home/${username}/work")
+if (!dir.exists(stringr::str_interp("${work_dir}/py/rlogs"))) {
+    dir.create(stringr::str_interp("${work_dir}/py/rlogs"))
+}
+
+zz <- file(file.path(work_dir, "py", "rlogs", "rnaseq.Rout"), open="wt")
+sink(zz, type="message")
 
 
 make_logical_matrix <- function(wd, technique, context_names) {
-    ### organize logical matrix
+    # organize logical matrix
     files <- c()
     for ( context in context_names ) {
         if (technique=="zfpkm") {
@@ -145,7 +145,6 @@ parse_contexts <- function(logical_matrix) {
 }
 
 
-# MCA
 plot_MCA_replicates <- function(logical_matrix, contexts, wd, label) {
     mca_results <- MCA(logical_matrix, graph=F)
     
@@ -405,7 +404,7 @@ plot_UMAP_contexts <- function(log_mat_context, contexts, wd, label, n_neigh, mi
       )
     )
     
-    coords <- data.frame(umap(fac_matrix, n_neighbors=n_neigh, metric="euclidean", min_dist=min_dist))
+    coords <- data.frame(uwot::umap(fac_matrix, n_neighbors=n_neigh, metric="euclidean", min_dist=min_dist))
     row.names(coords) <- row.names(log_mat_context)
     colnames(coords) <- c("x", "y")
     
