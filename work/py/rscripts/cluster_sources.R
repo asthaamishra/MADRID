@@ -9,6 +9,11 @@
 
 library(stringr)
 library(tools)
+library(uwot)
+library(ggplot2)
+library(ggrepel)
+library(tidyr)
+
 
 get_study_value <- function(file_path) {
     # This function will get the S## value from the file path
@@ -139,11 +144,9 @@ binarize_matrix_values <- function(context_dataframes, default_bin) {
             # Get the number of columns in the dataframe
             n_cols <- ncol(study)
 
-            # This will test values in the study. If the value is less than or equal to-3, it will place it in the "0" bin
-            # If it is greater than -3, it will execute the nested if-else statement
-            # In this statement, if the value is greater than -3 and less than or equal to 0, it will place the value in the "1" bin
-            # If the value is greater than 0, it will place the value in the "2" bin
-
+            # Values less than or equal to -3 will be set to 0
+            # Values greater than -3 will be set to 1
+            # Start on column 2, since column 1 is the ENTREZ_GENE_ID column
             binarized_study <- ifelse(study[,2:n_cols] <= -3, 0, 1)
             context_dataframe[[study_name]] <- binarized_study
         }
@@ -154,11 +157,65 @@ binarize_matrix_values <- function(context_dataframes, default_bin) {
     return(binarized_context_dataframes)
 }
 
-cluster_all_replicates_all_studies_all_context_one_source <- function() {
+cluster_all_replicates_all_studies_all_context_one_source <- function(binarized_dataframes) {
     # This function is responsible for clustering all replicates across all studies within a single data source for all contexts
     # For example, clustering all naiveB and immNK studies within RNA-seq data
 
+    master_dataframe <- data.frame()
+    row_names <- c()
 
+    for (context_num in seq_along(binarized_dataframes)) {
+        current_context_dataframe <- binarized_dataframes[[context_num]]
+        for (study_num in seq_along(current_context_dataframe)) {
+
+            current_study <- current_context_dataframe[[study_num]]
+
+            context_name <- names(binarized_dataframes)[context_num]  # Cell type (naiveB, immNK, etc.)
+            study_name <- names(current_context_dataframe)[study_num]     # S## value
+
+            current_study <- current_study %>%
+              #dplyr::mutate(dplyr::across(colnames(.)[-1], as.numeric)) %>%  # Do not select the first column, ENTREZ_GENE_ID
+              #dplyr::mutate(dplyr::across(colnames(.)[1], as.character)) %>%  # Ensure entrez IDs are in character format
+              dplyr::group_by(ENTREZ_GENE_ID) %>%  # Group by entrez gene ID
+              # dplyr::summarise(across(dplyr::funs(max)))
+              dplyr::summarise_each(dplyr::funs(max))  # If multiple of same entrez ID, take only the max value
+
+            if (context_num == 1) {
+                master_dataframe <- current_study
+            } else {
+                master_dataframe <- master_dataframe %>% dplyr::left_join(current_study, by="ENTREZ_GENE_ID")
+            }
+        }
+    }
+
+    master_dataframe_transpose <- t(master_dataframe[-1])
+    colnames(master_dataframe_transpose) <- master_dataframe$ENTREZ_GENE_ID
+
+    print("Starting cluster")
+    cluster_umap <- uwot::umap(master_dataframe_transpose, n_threads = 12, n_epochs = 20, learning_rate = 0.1)
+    cluster_umap_df <- data.frame(cluster_umap)
+
+    # Rename X0 and X1 to x and y
+    # format: rename(NEW = OLD)
+    cluster_umap_df <- cluster_umap_df %>% dplyr::rename(x = X1, y = X2)
+
+    # Create a new column called "context_study", equal to the row names. Then remove row names
+    cluster_umap_df$context_study <- row.names(cluster_umap_df)
+    row.names(cluster_umap_df) <- NULL
+
+    # Separate the context_study (naiveB_S1R1) into context (naiveB) and study (S1R1)
+    cluster_umap_df <- cluster_umap_df %>% tidyr::separate(data = ., col = context_study, into = c("context", "study"), sep = "_")
+
+    print("Starting plot")
+    pdf("figures/cluster_umap.pdf")
+    p <- ggplot2::ggplot(cluster_umap_df, ggplot2::aes(x=x, y=y, label=study, color=context)) +
+      ggplot2::geom_point(alpha=0.7) +  # Plot points
+      ggrepel::geom_text_repel(max.overlaps = Inf, show.legend = FALSE, max.time = Inf, max.iter = 300000) +  # Add text labels
+      ggplot2::labs(x="Dim 1", y="Dim 2")  # Add axis labels
+
+
+    print(p)  # Save the plot to the file name
+    dev.off()
 }
 
 cluster_all_replicates_all_studies_single_context_all_source <- function() {
@@ -192,9 +249,7 @@ main <- function(
     if (binarize_data == TRUE)
       context_dataframes <- binarize_matrix_values(context_dataframes = context_dataframes, default_bin = default_bin)
 
-    cluster_all_replicates_all_studies_all_context_one_source()
-
-    cluster_matrix_values(context_dataframes = context_dataframes)
+    cluster_all_replicates_all_studies_all_context_one_source(binarized_dataframes = context_dataframes)
 
     print("DONE")
 }
