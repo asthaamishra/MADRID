@@ -8,7 +8,6 @@ import time
 class Configs:
     def __init__(self, projectdir):
         self.rootdir = projectdir
-        # self.rootdir = "G:/GitHub/MADRID/docker/pipelines/"
         self.datadir = os.path.join(projectdir, "data")
         self.configdir = os.path.join(projectdir, "data", "config_sheets")
         self.outputdir = os.path.join(projectdir, "output")
