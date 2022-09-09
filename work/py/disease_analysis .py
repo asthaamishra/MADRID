@@ -375,9 +375,16 @@ def main(argv):
         else:
             print('--taxon-id must be either an integer, or accepted string ("mouse", "human")')
             sys.exit()
-    elif type(taxon_id) != int:
+            
+    elif type(taxon_id) == int:
+        if taxon_id == 9606 or taxon_id == 10090:
+            sys.exit()
+    
+    else:
         print('--taxon-id must be either an integer, or accepted string ("mouse", "human")')
         sys.exit()
+                    
+        
 
     sheet_names = xl.sheet_names
     for disease_name in sheet_names:
