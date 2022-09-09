@@ -373,10 +373,16 @@ def main(argv):
         elif taxon_id.upper() == "MOUSE" or taxon_id.upper() == "MUS MUSCULUS":
             taxon_id = 10090
         else:
-            print('--taxon-id must be either an integer, or accepted string ("mouse", "human")')
+            print('--taxon-id must be either an accepted integer(9606, 10090), or accepted string ("mouse", "human")')
             sys.exit()
-    elif type(taxon_id) != int:
-        print('--taxon-id must be either an integer, or accepted string ("mouse", "human")')
+    elif type(taxon_id) == int:
+        if taxon_id == 9606 or taxon_id == 10090:
+            continue
+        else:
+            print('--taxon-id must be either an accepted integer(9606, 10090), or accepted string ("mouse", "human")')
+            sys.exit()
+    else:
+        print('--taxon-id must be either an accepted integer(9606, 10090), or accepted string ("mouse", "human")')
         sys.exit()
 
     sheet_names = xl.sheet_names
